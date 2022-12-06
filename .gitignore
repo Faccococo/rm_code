@@ -1,0 +1,10 @@
+.vs/
+*build*/
+.vscode
+.idea
+config
+bringup
+/data_test/
+/record
+/record_down
+/record_up

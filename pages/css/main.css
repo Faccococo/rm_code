@@ -1,0 +1,27 @@
+body {
+    /*background: url(../image/grid.gif) repeat;*/
+}
+
+.upper {
+    height: 70vh;
+}
+
+.logs {
+    background: #212121;
+    color: #FFFFFF;
+    overflow-y: scroll;
+    height: 25vh;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-left: 5vh;
+}
+
+.logs::-webkit-scrollbar-thumb {
+    background: #616161;
+}
+
+.image {
+    max-height: 50vh;
+}

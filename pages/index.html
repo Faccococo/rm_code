@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Jony Zhu">
+    <meta name="description" content="HTML5 Base Template.">
+    <meta name="keywords" content="HTML5,Template">
+    <title>Artinx Hub Frontend</title>
+
+    <link rel="stylesheet" type="text/css" href="css/mdui.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/main.css"/>
+
+    <!--[if IE]>
+    <script src="js/excanvas.js"></script><![endif]-->
+
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/main.js"></script>
+
+</head>
+
+<body class="mdui-drawer-body-left mdui-appbar-with-toolbar mdui-bottom-nav-fixed mdui-theme-primary-indigo mdui-theme-accent-pink mdui-theme-layout-auto mdui-loaded" style="padding-bottom: 25vh">
+<div class="mdui-container-fluid">
+    <!-- toolbar start -->
+    <header class="mdui-appbar mdui-appbar-fixed">
+        <div class="mdui-toolbar mdui-color-theme">
+            <p class="mdui-typo-headline">ARTINX Hub</p>
+            <div class="mdui-toolbar-spacer"></div>
+            <button class="mdui-btn mdui-btn-icon" type="button" onclick="exitServer()">
+                <i class="mdui-icon material-icons">exit_to_app</i>
+            </button>
+        </div>
+    </header>
+    <!-- drawer start -->
+    <div class="mdui-drawer">
+        <div class="mdui-list" id="filter">
+            <div class="mdui-subheader">Filter</div>
+        </div>
+    </div>
+
+    <!-- status start -->
+    <div class="mdui-row">
+        <div class="mdui-col-xs-12">
+            <p><span>Status: </span><span id="current_status">Waiting for Server...</span></p>
+        </div>
+    </div>
+
+    <!-- img start -->
+    <div class="mdui-row">
+        <div class="mdui-col-xs-8" id="images"></div>
+        <div class="mdui-col-xs-4" >
+            <table class="mdui-table" id="watches" style="box-shadow: none!important;-webkit-box-shadow:none!important;">
+            </table>
+        </div>
+    </div>
+    <!-- log start -->
+    <div class="logs" id="logs">
+    </div>
+</div>
+</body>
+</html>

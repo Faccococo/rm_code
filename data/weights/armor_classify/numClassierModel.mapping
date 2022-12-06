@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<mapping>
+	<map>
+		<framework name="input" output_port_id="input" />
+		<IR name="input" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="35" output_port_id="35" />
+		<IR name="35" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="Conv_0" output_port_id="34" />
+		<IR name="Conv_0" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="Relu_1" output_port_id="19" />
+		<IR name="Relu_1" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="MaxPool_2" output_port_id="20" />
+		<IR name="MaxPool_2" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="38" output_port_id="38" />
+		<IR name="38" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="Conv_3" output_port_id="37" />
+		<IR name="Conv_3" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="Relu_4" output_port_id="23" />
+		<IR name="Relu_4" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="MaxPool_5" output_port_id="24" />
+		<IR name="MaxPool_5" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="Shape_6" output_port_id="25" />
+		<IR name="Shape_6" output_port_id="1" />
+	</map>
+	<map>
+		<framework name="Constant_7" output_port_id="26" />
+		<IR name="Constant_7" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="Gather_828" output_port_id="27" />
+		<IR name="Gather_828" output_port_id="3" />
+	</map>
+	<map>
+		<framework name="Unsqueeze_9/Unsqueeze" output_port_id="29" />
+		<IR name="Unsqueeze_9/Unsqueeze" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="40" output_port_id="40" />
+		<IR name="40" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="Concat_10" output_port_id="31" />
+		<IR name="Concat_10" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="Reshape_11" output_port_id="32" />
+		<IR name="Reshape_11" output_port_id="2" />
+	</map>
+	<map>
+		<framework name="15" output_port_id="15" />
+		<IR name="15" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="16" output_port_id="16" />
+		<IR name="16" output_port_id="0" />
+	</map>
+	<map>
+		<framework name="output" output_port_id="output" />
+		<IR name="output" output_port_id="2" />
+	</map>
+</mapping>
