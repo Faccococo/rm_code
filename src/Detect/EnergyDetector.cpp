@@ -125,6 +125,18 @@ class EnergyDetector final
         // binary = imgChannels[0] > threshold & imgChannels[1] > threshold & imgChannels[2] > threshold;
     }
 
+    /*
+     * 本项目中，旋转矩形的顶点顺序如下
+     * rect[0]:矩形顶点中最左侧的点
+     * rect[1]:矩形顶点中最上方的点
+     * rect[2]:矩形顶点中最右侧的点
+     * rect[3]:矩形顶点中最下方的点
+     *
+     * 在本方法中，经过变换之后的矩形width,height,angle定义如下
+     * width:矩形的短边
+     * height:矩形的长边
+     * angle:x轴顺时针旋转到与短边重合经过的角度
+     * */
     static void regularRotated(cv::RotatedRect& r) {
         if(r.size.width > r.size.height) {
             std::swap<float>(r.size.width, r.size.height);
@@ -206,6 +218,7 @@ class EnergyDetector final
                 EnergyVane vane;
                 vane.contour.assign(armorContours[j].begin(), armorContours[j].end());
                 vane.rrect = cv::minAreaRect(vane.contour);
+                regularRotated(vane.rrect);
                 cv::approxPolyDP(vane.contour, vane.hull, 1.0, true);
                 vane.hullNum = static_cast<int>(vane.hull.size());
                 vane.cArea = static_cast<float >(cv::contourArea(vane.contour));
@@ -219,7 +232,6 @@ class EnergyDetector final
                 armor.direction = armor.rrect.center - armor.vane.rrect.center;
                 armor.angel = static_cast<float >(atan2(armor.direction.y, armor.direction.x));
                 armor.circleCenter = armor.vane.rrect.center * 3.3 - 2.3 * armor.rrect.center;
-
                 candidateArmors.push_back(armor);
                 break;
             }
@@ -251,8 +263,8 @@ class EnergyDetector final
 
         res = {target.rrect.center, target.circleCenter};
 
-        cv::line(imgOut, target.circleCenter, armorVertices[0], cv::Scalar{ 0, 255, 255 });
-        cv::line(imgOut, target.circleCenter, armorVertices[1], cv::Scalar{ 0, 255, 255 });
+        cv::line(imgOut, target.circleCenter, armorVertices[3], cv::Scalar{ 0, 255, 255 });
+//        cv::line(imgOut, target.circleCenter, armorVertices[1], cv::Scalar{ 0, 255, 255 });
 
         debugView("target", imgOut, [](cv::Mat&) {});
 
