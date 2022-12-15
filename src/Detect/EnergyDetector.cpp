@@ -34,37 +34,12 @@
 //     float max_vane_area;
 //};
 struct EnergyDetectorSettings final {
-    int smallPredictMode;
-    int bigPredictMode;
-    int preFrames;
-    float armorMinArea;
-    float armorMaxArea;
-    float armorMinWHRatio;
-    float armorMaxWHRatio;
-    float armorMinAreaRatio;
-    float stripMinArea;
-    float stripMaxArea;
-    float stripMinWHRatio;
-    float stripMaxWHRatio;
-    float stripMaxAreaRatio;
-    float noiseArea;
-    float predictAngle;
-    float radius;
-    float offsetPreAngle;
-    cv::Point2f offset;
+    int imageThreshold;
 };
 
 template <class Inspector>
 bool inspect(Inspector& f, EnergyDetectorSettings& x) {
-    return f.object(x).fields(f.field("smallPredictMode", x.smallPredictMode), f.field("bigPredictMode", x.bigPredictMode),
-                              f.field("preFrames", x.preFrames).fallback(12), f.field("armorMinArea", x.armorMinArea),
-                              f.field("armorMaxArea", x.armorMaxArea), f.field("armorMinWHRatio", x.armorMinWHRatio),
-                              f.field("armorMaxWHRatio", x.armorMaxWHRatio), f.field("armorMinAreaRatio", x.armorMinAreaRatio),
-                              f.field("stripMinArea", x.stripMinArea), f.field("stripMaxArea", x.stripMaxArea),
-                              f.field("stripMaxWHRatio", x.stripMaxWHRatio), f.field("stripMaxAreaRatio", x.stripMaxAreaRatio),
-                              f.field("noiseArea", x.noiseArea), f.field("predictAngle", x.predictAngle),
-                              f.field("radius", x.radius), f.field("offsetPreAngle", x.offsetPreAngle),
-                              f.field("offsetX", x.offset.x), f.field("offsetY", x.offset.y));
+    return f.object(x).fields(f.field("imageThreshold", x.imageThreshold));
 }
 
 class EnergyDetector final
@@ -74,8 +49,16 @@ class EnergyDetector final
 
     bool mEnabled = true;
 
-
     void reset() {}
+
+    const std::vector<cv::Point3d> mObjectPointsLarge = {
+        { -widthOfLargeArmor / 2, +heightOfArmorLightBar / 2, 0.0 },
+        { -widthOfLargeArmor / 2, -heightOfArmorLightBar / 2, 0.0 },
+        { +widthOfLargeArmor / 2, -heightOfArmorLightBar / 2, 0.0 },
+        { +widthOfLargeArmor / 2, +heightOfArmorLightBar / 2, 0.0 },
+    };
+
+    std::vector<cv::Point2f> mImagePoint{ 4 };
 
     void debugView(const std::string_view& name, const cv::Mat& src, const std::function<void(cv::Mat&)>& func) {
 #ifndef ARTINXHUB_DEBUG
@@ -100,14 +83,14 @@ class EnergyDetector final
         sendAll(image_frame_atom_v, BlackBoard::instance().updateSync(newKey, std::move(frame)));
     }
 
-    static void setBinary(const cv::Mat& src, cv::Mat& binary) {
+    void setBinary(const cv::Mat& src, cv::Mat& binary) {
         std::vector<cv::Mat> imgChannels;
         cv::split(src, imgChannels);
 
         cv::Mat gray, grayBin, colorBin;
         cv::cvtColor(src, gray, cv::COLOR_BGR2GRAY);
 
-        constexpr auto threshold = 90;
+        int threshold = mConfig.imageThreshold;
         if(GlobalSettings::get().selfColor == Color::Red) {
             cv::threshold(gray, grayBin, threshold, 255, cv::THRESH_BINARY);
             const auto energyRed = imgChannels[2] - imgChannels[0];
@@ -205,7 +188,7 @@ class EnergyDetector final
 
             // 父轮廓遍历
             // 面积比、长宽比、角点数、凸包面积比
-            for(int j = armorHierarchy[i][3]; j < static_cast<int >(armorContours.size() )&& j > -1; j = armorHierarchy[j][3]) {
+            for(int j = armorHierarchy[i][3]; j < static_cast<int>(armorContours.size()) && j > -1; j = armorHierarchy[j][3]) {
                 float fatherArea = static_cast<float>(contourArea(armorContours[j]));
                 if(sonArea / fatherArea < 0.15 || sonArea / fatherArea > 0.55)
                     continue;
@@ -221,16 +204,16 @@ class EnergyDetector final
                 regularRotated(vane.rrect);
                 cv::approxPolyDP(vane.contour, vane.hull, 1.0, true);
                 vane.hullNum = static_cast<int>(vane.hull.size());
-                vane.cArea = static_cast<float >(cv::contourArea(vane.contour));
+                vane.cArea = static_cast<float>(cv::contourArea(vane.contour));
 
                 EnergyArmor armor;
                 armor.vane = vane;
                 armor.contour.assign(armorContours[i].begin(), armorContours[i].end());
                 armor.rrect = cv::minAreaRect(armor.contour);
-                armor.cArea = static_cast<float >(cv::contourArea(armor.contour));
+                armor.cArea = static_cast<float>(cv::contourArea(armor.contour));
                 armor.areaRatio = armor.cArea / armor.vane.cArea;
                 armor.direction = armor.rrect.center - armor.vane.rrect.center;
-                armor.angel = static_cast<float >(atan2(armor.direction.y, armor.direction.x));
+                armor.angel = static_cast<float>(atan2(armor.direction.y, armor.direction.x));
                 armor.circleCenter = armor.vane.rrect.center * 3.3 - 2.3 * armor.rrect.center;
                 candidateArmors.push_back(armor);
                 break;
@@ -261,10 +244,10 @@ class EnergyDetector final
             return false;
         }
 
-        res = {target.rrect.center, target.circleCenter};
+        res = { target.rrect.center, target.circleCenter };
 
         cv::line(imgOut, target.circleCenter, armorVertices[3], cv::Scalar{ 0, 255, 255 });
-//        cv::line(imgOut, target.circleCenter, armorVertices[1], cv::Scalar{ 0, 255, 255 });
+        //        cv::line(imgOut, target.circleCenter, armorVertices[1], cv::Scalar{ 0, 255, 255 });
 
         debugView("target", imgOut, [](cv::Mat&) {});
 
@@ -315,7 +298,7 @@ class EnergyDetector final
         float roi = armor.rrect.size.width > armor.rrect.size.height ? armor.rrect.size.width : armor.rrect.size.height;
         roi /= 1.7;
         cv::Rect2f roiRect = cv::Rect2f(circleCenter.x - roi, circleCenter.y - roi, 2 * roi, 2 * roi);
-        roiRect &= cv::Rect2f(cv::Point2f(0, 0), cv::Point2f(static_cast<float >(binary.cols), static_cast<float >(binary.rows)));
+        roiRect &= cv::Rect2f(cv::Point2f(0, 0), cv::Point2f(static_cast<float>(binary.cols), static_cast<float>(binary.rows)));
 
         if(roiRect.width <= 10 || roiRect.height <= 10)
             return false;
@@ -332,7 +315,7 @@ class EnergyDetector final
 
         int iMax = -1;
         double maxArea = 0;
-        for(int i = 0; i < static_cast<int >(contours.size()); i++) {
+        for(int i = 0; i < static_cast<int>(contours.size()); i++) {
             double area = contourArea(contours[i]);
             double rectArea = cv::minAreaRect(contours[i]).size.area();
             if(area / armor.cArea < 0.1)
@@ -359,6 +342,8 @@ class EnergyDetector final
         cv::Point2f dis = pt1 - pt2;
         return static_cast<float>(sqrt(pow(dis.x, 2) + pow(dis.y, 2)));
     }
+
+    void solve() {}
 
 public:
     EnergyDetector(caf::actor_config& base, const HubConfig& config) : HubHelper{ base, config }, mKey{ generateKey(this) } {}
@@ -388,10 +373,9 @@ public:
                      if(!detectArmor(frame, center))
                          return;
 
-//                     //TODO : PNP solve
-//                     res.armorPoint = Point<UnitType::Distance, FrameOfRef::Robot>{0, 0, 0};
-//                     res.rPoint = Point<UnitType::Distance, FrameOfRef::Robot>{0, 0, 0};
-
+                     //                     //TODO : PNP solve
+                     //                     res.armorPoint = Point<UnitType::Distance, FrameOfRef::Robot>{0, 0, 0};
+                     //                     res.rPoint = Point<UnitType::Distance, FrameOfRef::Robot>{0, 0, 0};
 
                      sendAll(energy_detect_available_atom_v, BlackBoard::instance().updateSync(mKey, res));
                  } };
